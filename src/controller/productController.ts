@@ -56,12 +56,21 @@ export const getSingleProduct = async (req: Request, res: Response) => {
 }
 
 export const createProduct = async (req: Request, res: Response) => {
-    const title = req.body.title;
-    const description = req.body.description;
-    const stock = req.body.stock;
-    const price = req.body.price;
+    const { title, description, stock, price, image } = req.body;
 
-    if (title === undefined) {
+    const requiredFields = { title, description, stock, price, image };
+
+    const missingFields = Object.entries(requiredFields)
+    .filter(([_, value]) => value === undefined || value === "")
+    .map(([key]) => key);
+
+    if (missingFields.length > 0) {
+        res.status(400).json({
+            error: `Följande fält saknas: ${missingFields.join(', ')}`
+        });
+    }
+
+    if (!title || !description || !stock || !price) {
         res.status(400).json({error: 'Title is required'})
         return;
     }
@@ -71,7 +80,7 @@ export const createProduct = async (req: Request, res: Response) => {
             INSERT INTO products (title, description, stock, price)
             VALUES (?, ?, ?, ?)
         `
-        const [result] = await db.query<ResultSetHeader>(sql,  [title, description, stock, price])
+        const [result] = await db.query<ResultSetHeader>(sql, [title, description, stock, price])
         res.status(201).json({message: 'Product created', id: result.insertId})
     } catch (error: unknown) {
         const message = error  instanceof Error ? error.message : 'Unknown error'
@@ -80,31 +89,47 @@ export const createProduct = async (req: Request, res: Response) => {
 }
 
 export const updateProduct = async (req: Request, res: Response) => {
-    const { title, description, stock, price, image } = req.body;
-    const id = parseInt(req.params.id);
+  const productId = parseInt(req.params.id);
+  const {title, description, stock, price } = req.body;
 
-    if (!title) {
-        return res.status(400).json({ error: 'Title is required' });
+  const requiredFields = { title, description, stock, price };
+
+  const missingFields = Object.entries(requiredFields)
+  .filter(([_, value]) => value === undefined || value === "")
+  .map(([key]) => key);
+
+  if (missingFields.length > 0) {
+      res.status(400).json({
+          error: `Följande fält saknas: ${missingFields.join(', ')}`
+      });
+  }
+
+
+  if (!title || !description || !stock || !price) {
+    res.status(400).json({ error: 'All fields are required' });
+  }
+
+  try {
+    const [product] = await db.query<IProduct[]>('SELECT * FROM products WHERE id = ?', [productId]);
+
+    if (product.length === 0) {
+      res.status(404).json({ error: 'Product not found' });
     }
 
-    try {
-        const [products] = await db.query<IProduct[]>('SELECT * FROM products WHERE id = ?', [id]);
-        if (products.length === 0) {
-            return res.status(404).json({ error: 'Product not found' });
-        }
+    const result = await db.query(
+      `UPDATE products
+       SET title = ?, description = ?, stock = ?, price = ?
+       WHERE id = ?`,
+      [title, description, stock, price, productId]
+    );
 
-        await db.query(
-            `UPDATE products 
-             SET title = ?, description = ?, stock = ?, price = ?, image = ?
-             WHERE id = ?`,
-            [title, description, stock, price, image, id]
-        );
+    res.status(200).json({ message: 'Product updated successfully', id: productId, result });
+    
+  } catch (error) {
 
-        res.json({ message: 'Product updated', id });
-    } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        res.status(500).json({ error: message });
-    }
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    res.status(500).json({ error: message });
+  }
 }
 
 export const deleteProduct = async (req: Request, res: Response) => {
