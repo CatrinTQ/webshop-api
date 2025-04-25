@@ -15,6 +15,8 @@ Databasen innehåller produkter för rullskridskor och komponenter så som plate
 ## ER-diagram
 (src/images/er-diagram.png)
 
+## Databasen ligger under mappen webshop i projektet.
+
 ## Funktioner ✨
 
 API:et erbjuder följande funktioner:
