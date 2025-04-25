@@ -20,29 +20,29 @@ Databasen innehåller produkter för rullskridskor och komponenter så som plate
 API:et erbjuder följande funktioner:
 ### Kategorier 📂
 
-[x] GET /categories – Hämta alla kategorier
+- [x] GET /categories – Hämta alla kategorier
 
-[x] GET /categories/:id – Hämta en specifik kategori
+- [x] GET /categories/:id – Hämta en specifik kategori
 
-[x] GET /categories/:id/products – Hämta alla produkter i en viss kategori
+- [x] GET /categories/:id/products – Hämta alla produkter i en viss kategori
 
-[x] POST /categories – Skapa en ny kategori
+- [x] POST /categories – Skapa en ny kategori
 
-[x] PATCH /categories/:id – Uppdatera en kategori
+- [x] PATCH /categories/:id – Uppdatera en kategori
 
-[x] DELETE /categories/:id – Radera en kategori
+- [x] DELETE /categories/:id – Radera en kategori
 
 ### Produkter 📦
 
-[x] GET /products – Hämta alla produkter
+- [x] GET /products – Hämta alla produkter
 
-[x] GET /products/:id – Hämta en specifik produkt
+- [x] GET /products/:id – Hämta en specifik produkt
 
-[x] POST /products – Skapa en ny produkt
+- [x] POST /products – Skapa en ny produkt
 
-[x] PATCH /products/:id – Uppdatera en produkt
+- [x] PATCH /products/:id – Uppdatera en produkt
 
-[x] DELETE /products/:id – Radera en produkt
+- [x] DELETE /products/:id – Radera en produkt
 
 
 ## Felhantering ⚠️
