@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { db } from "../config/db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { ICategory } from "../models/ICategory";
+import { IProduct } from "../models/IProduct";
 
 export const getAllCategories = async (req: Request, res: Response) => {
     try {
@@ -35,6 +36,31 @@ export const getSingleCategory = async (req: Request, res: Response) => {
     }
 }
 
+export const getAllProductsFromCategory = async (req: Request, res: Response) => {
+    const categoryId = req.params.id
+
+    try {
+        const sql = `
+        SELECT products.id, products.title, categories.name FROM categories
+        JOIN products_categories ON products_categories.category_id = categories.id
+        JOIN products ON products_categories.product_id = products.id
+        WHERE categories.id = ?
+        `
+
+        const [rows] = await db.query<IProduct[]>(sql, [categoryId])
+
+        if (rows.length === 0) {
+            res.status(404).json({ message: 'Category not found or has no products' })
+            return
+        }
+
+        res.json(rows) // Returnera hela listan av produkter
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        res.status(500).json({ error: message })
+    }
+}
+
 export const createCategory = async (req: Request, res: Response) => {
     const name = req.body.name;
 
@@ -62,10 +88,11 @@ export const updateCategory = async (req: Request, res: Response) => {
   
     if (!name) {
       res.status(400).json({ error: 'Category name is required' });
+      return;
     }
   
     try {
-      const [category] = await db.query<ICategory[]>('SELECT * FROM products WHERE id = ?', [categoryId]);
+      const [category] = await db.query<ICategory[]>('SELECT * FROM categories WHERE id = ?', [categoryId]);
   
       if (category.length === 0) {
         res.status(404).json({ error: 'Category not found' });
@@ -94,7 +121,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
         DELETE FROM categories
         WHERE id = ?
         `
-        
+
         const [result] = await db.query<ResultSetHeader>(sql, [id])
         if (result.affectedRows === 0) {
             res.status(404).json({message: 'Category not found'})

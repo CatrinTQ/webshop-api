@@ -58,7 +58,7 @@ export const getSingleProduct = async (req: Request, res: Response) => {
 export const createProduct = async (req: Request, res: Response) => {
     const { title, description, stock, price, image } = req.body;
 
-    const requiredFields = { title, description, stock, price, image };
+    const requiredFields = { title, description, stock, price, image};
 
     const missingFields = Object.entries(requiredFields)
     .filter(([_, value]) => value === undefined || value === "")
@@ -77,10 +77,10 @@ export const createProduct = async (req: Request, res: Response) => {
 
     try {
         const sql = `
-            INSERT INTO products (title, description, stock, price)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO products (title, description, stock, price, image)
+            VALUES (?, ?, ?, ?, ?)
         `
-        const [result] = await db.query<ResultSetHeader>(sql, [title, description, stock, price])
+        const [result] = await db.query<ResultSetHeader>(sql, [title, description, stock, price, image || null])
         res.status(201).json({message: 'Product created', id: result.insertId})
     } catch (error: unknown) {
         const message = error  instanceof Error ? error.message : 'Unknown error'
@@ -103,7 +103,6 @@ export const updateProduct = async (req: Request, res: Response) => {
           error: `Följande fält saknas: ${missingFields.join(', ')}`
       });
   }
-
 
   if (!title || !description || !stock || !price) {
     res.status(400).json({ error: 'All fields are required' });
@@ -142,12 +141,12 @@ export const deleteProduct = async (req: Request, res: Response) => {
         `
 
         const [result] = await db.query<ResultSetHeader>(sql, [id])
-        if (result.affectedRows === 0) {
+        if (!result || result.affectedRows === 0) {
             res.status(404).json({message: 'Product not found'})
             return;
         }
 
-        res.json({message: 'Product deleted'})
+        res.status(200).json({message: 'Product deleted'})
     } catch (error: unknown) {
         const message = error  instanceof Error ? error.message : 'Unknown error'
         res.status(500).json({error: message})   
